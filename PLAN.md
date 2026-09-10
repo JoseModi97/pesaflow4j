@@ -484,14 +484,23 @@ Ordered roughly by effort-to-impact ratio:
       [mvnrepository.com](https://mvnrepository.com) (auto-indexes from
       Central, but a manual "request update" speeds it up first time),
       [libraries.io](https://libraries.io).
-- [ ] **"Awesome" list PRs**: `awesome-java`, and any
-      `awesome-kenya-tech`/`awesome-fintech`-style curated list — a single
-      well-described PR line, high backlink value.
-- [ ] **A short launch write-up** (dev.to / Hashnode / a personal blog,
-      cross-posted) titled around the actual search intent — *"Accepting
-      M-Pesa/PesaFlow payments from a Java app"* rather than just the
-      product name — since that phrase is what people actually type into
-      Google before they know the library's name.
+- [x] **"Awesome" list PRs**: opened
+      [akullpp/awesome-java#1317](https://github.com/akullpp/awesome-java/pull/1317)
+      (one line under `### Financial`, right next to the existing Stripe
+      entry — same "payment gateway API integration" shape). Checked
+      `MadeInKenya/madeinkenya.github.io` too and deliberately skipped it
+      for now: its guidelines ask for ~10+ GitHub stars and a maintainer
+      social-media link as part of a submission, and this repo is hours
+      old with neither — worth revisiting once there's real traction
+      rather than forcing a weak entry today.
+- [x] **A short launch write-up**, titled around the actual search intent
+      (*"Accepting M-Pesa and PesaFlow Payments From a Java App"* rather
+      than just the product name, since that's the phrase people actually
+      type into Google before they know the library exists) — drafted in
+      first person as the maintainer's own voice, delivered as a file for
+      the project owner to review and post wherever they choose (dev.to,
+      Hashnode, a personal blog); publishing it is their call, not
+      something done automatically on their behalf.
 - [ ] **Answer/ask on Stack Overflow** under existing `ecitizen`/`pesaflow`/
       `m-pesa` tags once real usage questions exist — Stack Overflow answers
       rank extremely well for exact-error-message searches, which is a
