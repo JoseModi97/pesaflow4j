@@ -491,13 +491,15 @@ Ordered roughly by effort-to-impact ratio:
       [akullpp/awesome-java#1317](https://github.com/akullpp/awesome-java/pull/1317)
       (one line under `### Financial`, right next to the existing Stripe
       entry — same "payment gateway API integration" shape). Checked
-      `MadeInKenya/madeinkenya.github.io` too and deliberately skipped it:
+      `MadeInKenya/madeinkenya.github.io` too — initially held off, since
       its guidelines ask for ~10+ GitHub stars and a maintainer
-      social-media link as part of a submission, and this repo is hours
-      old with neither — submitting today would visibly fail the list's
-      own stated bar and risks looking inconsiderate to its maintainers,
-      not just getting rejected. Worth revisiting once there's real
-      traction.
+      social-media link, and this repo had neither. Submitted anyway at
+      the project owner's explicit request: opened
+      [MadeInKenya/madeinkenya.github.io#39](https://github.com/MadeInKenya/madeinkenya.github.io/pull/39)
+      (one line under the `Java` section), with the gap disclosed directly
+      in the PR body rather than glossed over, so their maintainers can
+      decide with full context instead of us quietly working around their
+      own stated bar.
 - [x] **A short launch write-up**, titled around the actual search intent
       (*"Accepting M-Pesa and PesaFlow Payments From a Java App"* rather
       than just the product name, since that's the phrase people actually
