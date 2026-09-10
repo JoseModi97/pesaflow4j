@@ -5,7 +5,17 @@ plugins {
 }
 
 group = "io.github.josemodi97"
-version = project.findProperty("pesaflow4jVersion") as String? ?: "0.1.0-SNAPSHOT"
+// Single source of truth for "what version of the main reactor's modules
+// does this standalone build's own version - and its test dependencies
+// below - line up with". Pass -PpesaflowVersion=X.Y.Z to override; the
+// fallback must be kept in sync with the root reactor's current version
+// (see pom.xml) since the two are released independently. Previously this
+// drifted (a separate hardcoded "0.1.0-SNAPSHOT" test-only constant vs.
+// this property), which broke CI after the 0.1.0 release: mavenLocal only
+// had pesaflow4j-core:0.1.0, not the stale :0.1.0-SNAPSHOT these tests
+// asked for.
+val pesaflow4jReactorVersion = project.findProperty("pesaflow4jVersion") as String? ?: "0.1.0"
+version = pesaflow4jReactorVersion
 
 description = "Gradle plugin for PesaFlow4J: scaffolds a placeholder pesaflow4j.properties " +
         "credentials file into your project (./gradlew pesaflow4jInit)."
@@ -38,8 +48,6 @@ tasks.named<JavaCompile>("compileJava") {
     options.release.set(8)
 }
 
-val pesaflow4jVersionForTests = "0.1.0-SNAPSHOT"
-
 dependencies {
     testImplementation(gradleTestKit())
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
@@ -53,11 +61,11 @@ dependencies {
     // fails the build, not just looks plausible.
     testImplementation("javax.servlet:javax.servlet-api:4.0.1")
     testImplementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
-    testImplementation("io.github.josemodi97:pesaflow4j-core:$pesaflow4jVersionForTests")
-    testImplementation("io.github.josemodi97:pesaflow4j-servlet:$pesaflow4jVersionForTests")
-    testImplementation("io.github.josemodi97:pesaflow4j-jakarta:$pesaflow4jVersionForTests")
-    testImplementation("io.github.josemodi97:pesaflow4j-spring-boot2-starter:$pesaflow4jVersionForTests")
-    testImplementation("io.github.josemodi97:pesaflow4j-spring-boot3-starter:$pesaflow4jVersionForTests")
+    testImplementation("io.github.josemodi97:pesaflow4j-core:$pesaflow4jReactorVersion")
+    testImplementation("io.github.josemodi97:pesaflow4j-servlet:$pesaflow4jReactorVersion")
+    testImplementation("io.github.josemodi97:pesaflow4j-jakarta:$pesaflow4jReactorVersion")
+    testImplementation("io.github.josemodi97:pesaflow4j-spring-boot2-starter:$pesaflow4jReactorVersion")
+    testImplementation("io.github.josemodi97:pesaflow4j-spring-boot3-starter:$pesaflow4jReactorVersion")
 }
 
 gradlePlugin {

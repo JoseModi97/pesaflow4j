@@ -4,7 +4,9 @@ plugins {
 
 allprojects {
     group = "io.github.josemodi97"
-    version = project.findProperty("pesaflow4jVersion") as String? ?: "0.1.0-SNAPSHOT"
+    // Fallback must be kept in sync with the root pom.xml's <version> -
+    // the Gradle and Maven builds compile the same source tree independently.
+    version = project.findProperty("pesaflow4jVersion") as String? ?: "0.1.0"
 
     repositories {
         mavenCentral()

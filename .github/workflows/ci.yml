@@ -27,7 +27,7 @@ jobs:
           java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and test every module
-        run: gradle build --console=plain
+        run: ./gradlew build --console=plain
 
   gradle-plugin-build:
     name: Gradle plugin build (standalone)
@@ -38,10 +38,19 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: maven
+      - name: Install the main reactor to the local Maven repo
+        # pesaflow4j-gradle-plugin is a separate, standalone Gradle build
+        # (see PLAN.md SS4) - its test suite compile-verifies generated
+        # examples against pesaflow4j-core/-servlet/-jakarta and both Spring
+        # Boot starters, resolved from mavenLocal since this job's
+        # perspective has no other way to see modules built by the
+        # (separate) root Maven/Gradle reactor.
+        run: mvn -B -DskipTests install
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and test pesaflow4j-gradle-plugin
         working-directory: pesaflow4j-gradle-plugin
-        run: gradle build --console=plain
+        run: ./gradlew build --console=plain
 
   maven-build:
     name: Maven build (JDK ${{ matrix.java }})
@@ -74,7 +83,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: gradle/actions/setup-gradle@v4
       - name: Build the native binary
-        run: gradle :pesaflow4j-cli:nativeCompile --console=plain
+        run: ./gradlew :pesaflow4j-cli:nativeCompile --console=plain
       - name: Smoke-test the real binary
         run: |
           BIN=pesaflow4j-cli/build/native/nativeCompile/pesaflow4j
@@ -95,7 +104,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: Build the jar (release 8 bytecode)
-        run: gradle :pesaflow4j-core:jar --console=plain
+        run: ./gradlew :pesaflow4j-core:jar --console=plain
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -182,7 +191,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: Build the multi-release jar
-        run: gradle :pesaflow4j-core:jar --console=plain
+        run: ./gradlew :pesaflow4j-core:jar --console=plain
       - name: Validate multi-release API consistency
         run: |
           JAR=$(find pesaflow4j-core/build/libs -name 'pesaflow4j-core-*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar')
