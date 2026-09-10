@@ -2,6 +2,7 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     signing
+    id("com.gradle.plugin-publish") version "2.1.1"
 }
 
 group = "io.github.josemodi97"
@@ -69,12 +70,24 @@ dependencies {
 }
 
 gradlePlugin {
+    // Required by com.gradle.plugin-publish for the Plugin Portal listing.
+    website.set("https://github.com/JoseModi97/pesaflow4j")
+    vcsUrl.set("https://github.com/JoseModi97/pesaflow4j")
+
     plugins {
         create("pesaflow4j") {
             id = "io.github.josemodi97.pesaflow4j"
             implementationClass = "io.github.josemodi97.pesaflow4j.gradle.Pesaflow4jPlugin"
             displayName = "PesaFlow4J"
             description = project.description
+            // Keyword tags are how the Plugin Portal's own search surfaces
+            // this plugin - the same discoverability goal as the Maven
+            // Central SEO checklist in PLAN.md SS7, applied to this portal.
+            tags.set(listOf(
+                "pesaflow", "ecitizen", "kenya", "payment-gateway", "mpesa",
+                "stk-push", "fintech", "mobile-money", "sdk", "scaffolding",
+                "safaricom", "payments"
+            ))
         }
     }
 }

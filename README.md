@@ -134,6 +134,8 @@ Every flag falls back to a `PESAFLOW4J_*` environment variable, so CI pipelines 
 
 ### Project scaffolding: Maven & Gradle plugins
 
+`pesaflow4j-maven-plugin` is on Maven Central and usable today. `pesaflow4j-gradle-plugin` is built, tested, and CI-verified, but not yet published to the [Gradle Plugin Portal](https://plugins.gradle.org) — the `plugins { id(...) }` snippet below won't resolve until that's done (see [PLAN.md](PLAN.md#publishing-pesaflow4j-gradle-plugin)). Until then, build and `./gradlew publishToMavenLocal` it yourself from a clone of this repo.
+
 ```bash
 # Maven
 mvn io.github.josemodi97:pesaflow4j-maven-plugin:init
@@ -271,7 +273,7 @@ All eight modules in the table above are implemented and tested — with both a 
 
 ## Contributing
 
-Issues and pull requests are welcome — see [PLAN.md](PLAN.md) for the module layout. Build everything with `mvn test` or `gradle test` from the repo root; `pesaflow4j-gradle-plugin` is a standalone Gradle build (`cd pesaflow4j-gradle-plugin && gradle test`) since a Gradle plugin project can't sanely nest inside the reactor it builds.
+Issues and pull requests are welcome — see [PLAN.md](PLAN.md) for the module layout. Build everything with `mvn test` or `./gradlew test` from the repo root; `pesaflow4j-gradle-plugin` is a standalone Gradle build (`cd pesaflow4j-gradle-plugin && ./gradlew test`) since a Gradle plugin project can't sanely nest inside the reactor it builds.
 
 ## License
 

@@ -15,8 +15,8 @@ other language's SDK.
 | `pesaflow4j-spring-boot2-starter` | ✅ **Implemented** | Auto-configured `Pesaflow4jClient` bean + `pesaflow4j.*` property binding + opt-in webhook controller/events, for Spring Boot 2.x. |
 | `pesaflow4j-spring-boot3-starter` | ✅ **Implemented** | Same, for Spring Boot 3.x (Jakarta namespace, Java 17 floor). |
 | `pesaflow4j-cli` | ✅ **Implemented** | `checkout`, `status`, `verify` subcommands (picocli), distributed as a runnable fat jar (Gradle Shadow / Maven Shade) and a GraalVM native-image binary. |
-| `pesaflow4j-maven-plugin` | ✅ **Implemented** | `mvn io.github.josemodi97:pesaflow4j-maven-plugin:init` — auto-detects your framework and scaffolds a working example, not just a placeholder properties file. |
-| `pesaflow4j-gradle-plugin` | ✅ **Implemented** | `./gradlew pesaflow4jInit` — the same auto-detecting scaffolding, as a standalone-built Gradle plugin. |
+| `pesaflow4j-maven-plugin` | ✅ **Implemented & published** | `mvn io.github.josemodi97:pesaflow4j-maven-plugin:init` — auto-detects your framework and scaffolds a working example, not just a placeholder properties file. Live on Maven Central. |
+| `pesaflow4j-gradle-plugin` | ✅ Implemented, ⏳ not yet published | `./gradlew pesaflow4jInit` — the same auto-detecting scaffolding, as a standalone-built Gradle plugin. Built, tested, `publishPlugins`-ready; not yet on the Gradle Plugin Portal (§6b — needs a real portal account this environment can't create). |
 | `pesaflow4j-bom` | ✅ **Implemented** | Bill-of-materials (`java-platform` / `<packaging>pom</packaging>`) pinning matching versions of every library module. |
 
 Why core first: every other module is a thin adapter around it. Shipping a
@@ -385,6 +385,48 @@ time, real proof (not a local proxy) that the GraalVM native-image binary
 actually builds and the base HTTP transport actually runs on a genuine
 Java 8 JVM, neither of which this development environment could verify
 directly (see SS3 and the CLI section of SS5).
+
+## 6b. Publishing `pesaflow4j-gradle-plugin`
+
+Unlike every other module, this one doesn't go to Maven Central — Gradle
+plugins are conventionally published to the **Gradle Plugin Portal**
+(plugins.gradle.org), a separate service with its own account and API
+key. `pesaflow4j-gradle-plugin/build.gradle.kts` already has
+`com.gradle.plugin-publish` wired (`website`, `vcsUrl`, keyword `tags` for
+the portal's own search — the same discoverability goal as SS7, applied to
+this second registry), verified locally: `./gradlew build` and
+`./gradlew tasks` both confirm the plugin configures cleanly and the
+`publishPlugins` task is registered. The actual publish has **not**
+happened — it needs real portal credentials this environment can't create.
+
+1. **Create a Gradle Plugin Portal account** at
+   <https://plugins.gradle.org> (GitHub OAuth sign-in works here too).
+2. **Generate an API key pair**: profile page → API Keys → Generate. Shows
+   a key and a secret, once.
+3. **Add repository secrets**: `GRADLE_PUBLISH_KEY`, `GRADLE_PUBLISH_SECRET`
+   — `.github/workflows/release-gradle-plugin.yml` reads them as
+   `ORG_GRADLE_PROJECT_gradle.publish.key` / `...secret` (Gradle's
+   convention for mapping an env var to a project property), the same
+   property names `com.gradle.plugin-publish` looks for locally via
+   `gradle.publish.key`/`gradle.publish.secret` in `~/.gradle/gradle.properties`
+   or `./gradlew login`.
+4. **Push a version tag** (`git tag vX.Y.Z && git push --tags`) —
+   `release-gradle-plugin.yml` triggers off the same tag pattern as
+   `release.yml`, so both publish together from one tag push. It extracts
+   the version from the tag itself (`-PpesaflowVersion=...`), rather than
+   whatever `pesaflow4jVersion` fallback happens to be hardcoded in the
+   build file, so this can't go stale the way the SS test-dependency
+   version already did once (see the retrospective above).
+5. **First-time publish note**: a brand-new plugin ID needs to pass the
+   Portal's initial review before it's publicly listed (usually fast, can
+   take longer); subsequent versions of an already-approved ID publish
+   immediately.
+
+**Not yet done, because it genuinely can't be from here**: the account
+creation and API key generation in steps 1–2. Once you have the key pair,
+I can load it as repository secrets the same way as `CENTRAL_USERNAME`/
+`CENTRAL_PASSWORD` were — hand them over (or run `gh secret set` yourself,
+same either-way option as before) and step 4 can run for real.
 
 ## 7. SEO & discoverability checklist
 
