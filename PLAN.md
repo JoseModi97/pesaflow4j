@@ -27,8 +27,8 @@ added without ever touching the signing/verification logic again.
 *both* a real Gradle 8.11 and a real Apache Maven 3.9.9 in this environment —
 not just written and assumed correct. Current count: **72 distinct tests, 0
 failures**, across both build systems independently (Maven: `mvn test`,
-53 tests including `pesaflow4j-maven-plugin`; Gradle: `gradle test` at the
-root, 37 tests, plus `cd pesaflow4j-gradle-plugin && gradle test` for the
+53 tests including `pesaflow4j-maven-plugin`; Gradle: `./gradlew test` at the
+root, 37 tests, plus `cd pesaflow4j-gradle-plugin && ./gradlew test` for the
 standalone plugin build, 19 more).
 
 **Also done, beyond the original plan**: `pesaflow4j-core` ships as a real
@@ -149,7 +149,7 @@ artifact," but two real, independently-runnable builds:
 ```bash
 # Either of these works from a clean clone:
 mvn -pl pesaflow4j-core -am test
-gradle :pesaflow4j-core:test
+./gradlew :pesaflow4j-core:test
 ```
 
 This matters for the stated goal ("used in all Java projects, frameworks,
@@ -168,7 +168,7 @@ thing it builds, and this also keeps the root reactor's dependency graph
 acyclic). Build/test it with:
 
 ```bash
-cd pesaflow4j-gradle-plugin && gradle test
+cd pesaflow4j-gradle-plugin && ./gradlew test
 ```
 
 `pesaflow4j-maven-plugin`, by contrast, *is* an ordinary module in the root
@@ -317,12 +317,10 @@ the SEO/discoverability checklist in §7.
    reads that project property; `pesaflow4j-gradle-plugin` — a separate
    build — takes the same property independently since it isn't part of the
    root reactor). Tag `vX.Y.Z`, push the tag — `.github/workflows/release.yml`
-   (currently wired for `pesaflow4j-core` only; extend the `mvn -pl`/`-am`
-   argument to cover the other modules as they're ready to publish) builds,
-   signs, and uploads to the Central Publishing Portal (`autoPublish=false`
-   by default, so the first few releases can be reviewed in the portal UI
-   before the final "Publish" click; flip to `true` once confident in the
-   pipeline).
+   builds every module in the reactor, signs, and uploads to the Central
+   Publishing Portal (`autoPublish=false` by default, so releases can be
+   reviewed in the portal UI before the final "Publish" click; flip to
+   `true` once confident in the pipeline).
 6. Allow a few hours for propagation to Maven Central's search index and
    `repo.maven.apache.org` before the README's dependency snippets resolve
    for consumers.
@@ -332,6 +330,61 @@ API (`Pesaflow4jConfig`, `Pesaflow4jClient`, `CheckoutRequest`, result types)
 is still open to breaking changes based on early feedback; `1.0.0` once the
 core module's API is considered stable — after Phase 2 adapters have
 exercised it in real frameworks, not before.
+
+### 0.1.0 release retrospective — real bugs a local-only workflow never caught
+
+The 0.1.0 release (2026-09-10) was this project's first real contact with
+GitHub Actions and the actual Central Publishing API, after weeks of
+everything passing locally. Four genuine, previously-invisible bugs
+surfaced, in order:
+
+1. **`ci.yml` triggered on branch `main`; the repo's actual default branch
+   is `master`.** CI had never run — not once — on any push, since git
+   init. Only `release.yml` fired (tag pushes aren't branch-restricted).
+   Fixed by triggering on both.
+2. **`central-publishing-maven-plugin:0.7.0` couldn't parse its own
+   server's response.** Sonatype's API added a `"warnings"` field to
+   `DeploymentApiResponse`; the plugin's Jackson deserialization wasn't
+   configured to ignore unknown fields, so `mvn deploy` reported
+   `BUILD FAILURE` — even though the bundle had already uploaded
+   successfully and a real deployment existed in the portal, staged and
+   awaiting publish. Bumped to `0.11.0`. Lesson: a Maven Central
+   `BUILD FAILURE` is not proof nothing was uploaded — check the portal's
+   Deployments tab, specifically the "Uploaded bundle successfully,
+   deploymentId: ..." log line, before assuming a clean retry is needed.
+3. **No Gradle wrapper was ever committed**, on either the root reactor or
+   the standalone `pesaflow4j-gradle-plugin` build. Locally this was
+   invisible (a pinned Gradle 8.11.1 was installed once and reused for
+   every command all along). CI's `gradle build` picked up whatever
+   version the runner happened to have — Gradle 9.7.1 — which broke the
+   Shadow plugin's task graph in `pesaflow4j-cli`
+   (`You can't map a property that does not exist: propertyName=mainClassName`).
+   This is exactly the failure mode Gradle wrappers exist to prevent, and
+   it should have been added on day one, not discovered via a broken CI
+   run. Fixed: `gradlew`/`gradlew.bat`/`gradle-wrapper.{jar,properties}`
+   pinning 8.11.1, committed to both builds, `ci.yml` switched from bare
+   `gradle` to `./gradlew` everywhere.
+4. **The wrapper script lost its executable bit** when committed from a
+   Windows machine (`git ls-files -s gradlew` showed mode `100644`, not
+   `100755`) — invisible on Windows, but CI's Linux runners hit
+   `Process completed with exit code 126` (permission denied) trying to
+   run `./gradlew` directly. Fixed with `git update-index --chmod=+x`.
+5. A smaller, related version-drift bug: `pesaflow4j-gradle-plugin`'s test
+   suite depended on `pesaflow4j-core:0.1.0-SNAPSHOT` from mavenLocal via
+   a separately hardcoded constant, and its CI job never ran `mvn install`
+   to populate mavenLocal in the first place — so it failed even once the
+   Gradle-version issue was fixed. The hardcoded constant had also gone
+   stale the moment 0.1.0 (non-SNAPSHOT) was released. Fixed by adding the
+   missing `mvn -DskipTests install` step to that CI job, and replacing
+   the separate constant with a single shared `pesaflow4jReactorVersion`
+   property so the plugin's own version and its test dependencies can't
+   drift from each other again.
+
+All 8 CI jobs are green as of commit `2c7f79c` — including, for the first
+time, real proof (not a local proxy) that the GraalVM native-image binary
+actually builds and the base HTTP transport actually runs on a genuine
+Java 8 JVM, neither of which this development environment could verify
+directly (see SS3 and the CLI section of SS5).
 
 ## 7. SEO & discoverability checklist
 
@@ -416,10 +469,13 @@ every other item on this list depends on for a working install snippet.
 - **Maven plugin**: a plain JUnit test instantiating the Mojo directly
   (no Maven runtime needed) and asserting on the file it writes.
 - Every module above was additionally verified by running the *actual*
-  build for real — `gradle test` (root reactor + the standalone
+  build for real — `./gradlew test` (root reactor + the standalone
   `pesaflow4j-gradle-plugin` build) and `mvn test` (a real downloaded Apache
-  Maven 3.9.9, since none was preinstalled) both pass, 39 tests, 0 failures,
-  as of this writing.
+  Maven 3.9.9, since none was preinstalled) both pass, 72 tests, 0 failures,
+  as of this writing — plus, since then, the real GitHub Actions CI run
+  itself (all 8 jobs green), which is what actually caught the Gradle
+  wrapper/version-drift bugs in the 0.1.0 retrospective above that local
+  runs alone never surfaced.
 
 ## 9. Security notes
 

@@ -21,7 +21,7 @@ It is an independent, community-built SDK. It is not produced, endorsed, or supp
 - **Available for both Maven and Gradle** — published to Maven Central with a standard POM, and the source tree itself builds under both Maven and Gradle, so contributors aren't locked into one toolchain.
 - **Async-friendly** — every blocking network call has a `CompletableFuture`-returning sibling, so it composes cleanly with reactive and async codebases without pulling in a reactive library.
 - **A real JPMS module, not just a manifest hint** — `pesaflow4j-core` ships as a multi-release jar with a genuine `module-info.java` for Java 9+, and swaps in a `java.net.http.HttpClient`-based transport (HTTP/2, negotiated automatically) for Java 11+ — both completely transparent to callers, and both verified with real module-path execution rather than assumed correct.
-- **Ships as a native binary too** — `pesaflow4j-cli` builds with GraalVM `native-image` (`gradle nativeCompile` / `mvn -Pnative package`) for a dependency-free, instant-startup executable, alongside the regular JVM fat jar.
+- **Ships as a native binary too** — `pesaflow4j-cli` builds with GraalVM `native-image` (`./gradlew nativeCompile` / `mvn -Pnative package`) for a dependency-free, instant-startup executable, alongside the regular JVM fat jar.
 
 ---
 
@@ -61,7 +61,7 @@ implementation("io.github.josemodi97:pesaflow4j-core:0.1.0")
 implementation 'io.github.josemodi97:pesaflow4j-core:0.1.0'
 ```
 
-> Not yet on Maven Central? See [PLAN.md](PLAN.md#publishing-to-maven-central) for the release checklist, or build and install to your local repository with `mvn install` / `gradle publishToMavenLocal` from a clone of this repo.
+> Building from source instead? `mvn install` / `./gradlew publishToMavenLocal` from a clone of this repo installs to your local repository. See [PLAN.md](PLAN.md#publishing-to-maven-central) for the release process.
 
 ---
 
