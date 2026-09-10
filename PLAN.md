@@ -480,31 +480,39 @@ Ordered roughly by effort-to-impact ratio:
       `<url>`, `<scm>`, `<developers>`, `<licenses>` are already filled in
       both build files (§required by Central; also what search.maven.org
       displays and indexes).
-- [ ] **`pkg.go.dev`-style third-party indexes**: submit to
-      [mvnrepository.com](https://mvnrepository.com) (auto-indexes from
-      Central, but a manual "request update" speeds it up first time),
-      [libraries.io](https://libraries.io).
+- [ ] **`pkg.go.dev`-style third-party indexes**: [mvnrepository.com](https://mvnrepository.com)
+      and [libraries.io](https://libraries.io) both auto-index from Central
+      on their own crawl schedule — checked directly (browser, not just
+      assumed): neither has a public self-service "request/submit" form,
+      so there is no manual action either of us can take here. An earlier
+      draft of this checklist claimed a "request update" option exists;
+      that was wrong and has been corrected. Purely a waiting item.
 - [x] **"Awesome" list PRs**: opened
       [akullpp/awesome-java#1317](https://github.com/akullpp/awesome-java/pull/1317)
       (one line under `### Financial`, right next to the existing Stripe
       entry — same "payment gateway API integration" shape). Checked
-      `MadeInKenya/madeinkenya.github.io` too and deliberately skipped it
-      for now: its guidelines ask for ~10+ GitHub stars and a maintainer
+      `MadeInKenya/madeinkenya.github.io` too and deliberately skipped it:
+      its guidelines ask for ~10+ GitHub stars and a maintainer
       social-media link as part of a submission, and this repo is hours
-      old with neither — worth revisiting once there's real traction
-      rather than forcing a weak entry today.
+      old with neither — submitting today would visibly fail the list's
+      own stated bar and risks looking inconsiderate to its maintainers,
+      not just getting rejected. Worth revisiting once there's real
+      traction.
 - [x] **A short launch write-up**, titled around the actual search intent
       (*"Accepting M-Pesa and PesaFlow Payments From a Java App"* rather
       than just the product name, since that's the phrase people actually
       type into Google before they know the library exists) — drafted in
-      first person as the maintainer's own voice, delivered as a file for
-      the project owner to review and post wherever they choose (dev.to,
-      Hashnode, a personal blog); publishing it is their call, not
-      something done automatically on their behalf.
+      first person as the maintainer's own voice. Published as the
+      [v0.1.0 GitHub Release notes](https://github.com/JoseModi97/pesaflow4j/releases/tag/v0.1.0)
+      (linked from the repo's main page, indexed, no external account
+      needed to publish it there); also delivered as a standalone file for
+      the project owner to additionally cross-post to dev.to, Hashnode, or
+      elsewhere at their discretion — that step needs their own account,
+      so it's the one piece of this item that stays theirs to do.
 - [ ] **Answer/ask on Stack Overflow** under existing `ecitizen`/`pesaflow`/
-      `m-pesa` tags once real usage questions exist — Stack Overflow answers
-      rank extremely well for exact-error-message searches, which is a
-      common way developers land on a library.
+      `m-pesa` tags — inherently reactive, not something to action ahead of
+      time: there is no real usage question to answer yet for a same-day
+      project. Revisit once one exists.
 - [ ] **Keep the GitHub Actions CI badge green and visible** in the README —
       a passing-CI badge is a real (if minor) trust/ranking signal for people
       landing from search, not just decoration.
