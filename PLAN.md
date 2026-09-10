@@ -16,7 +16,7 @@ other language's SDK.
 | `pesaflow4j-spring-boot3-starter` | ✅ **Implemented** | Same, for Spring Boot 3.x (Jakarta namespace, Java 17 floor). |
 | `pesaflow4j-cli` | ✅ **Implemented** | `checkout`, `status`, `verify` subcommands (picocli), distributed as a runnable fat jar (Gradle Shadow / Maven Shade) and a GraalVM native-image binary. |
 | `pesaflow4j-maven-plugin` | ✅ **Implemented & published** | `mvn io.github.josemodi97:pesaflow4j-maven-plugin:init` — auto-detects your framework and scaffolds a working example, not just a placeholder properties file. Live on Maven Central. |
-| `pesaflow4j-gradle-plugin` | ✅ Implemented, ⏳ not yet published | `./gradlew pesaflow4jInit` — the same auto-detecting scaffolding, as a standalone-built Gradle plugin. Built, tested, `publishPlugins`-ready; not yet on the Gradle Plugin Portal (§6b — needs a real portal account this environment can't create). |
+| `pesaflow4j-gradle-plugin` | ✅ Implemented, ⏳ submitted, pending approval | `./gradlew pesaflow4jInit` — the same auto-detecting scaffolding, as a standalone-built Gradle plugin. `publishPlugins` ran successfully for `0.1.0`; new plugin IDs get a first-time manual review by Gradle before `plugins { id(...) }` resolves publicly (§6b). |
 | `pesaflow4j-bom` | ✅ **Implemented** | Bill-of-materials (`java-platform` / `<packaging>pom</packaging>`) pinning matching versions of every library module. |
 
 Why core first: every other module is a thin adapter around it. Shipping a
@@ -391,42 +391,65 @@ directly (see SS3 and the CLI section of SS5).
 Unlike every other module, this one doesn't go to Maven Central — Gradle
 plugins are conventionally published to the **Gradle Plugin Portal**
 (plugins.gradle.org), a separate service with its own account and API
-key. `pesaflow4j-gradle-plugin/build.gradle.kts` already has
-`com.gradle.plugin-publish` wired (`website`, `vcsUrl`, keyword `tags` for
-the portal's own search — the same discoverability goal as SS7, applied to
-this second registry), verified locally: `./gradlew build` and
-`./gradlew tasks` both confirm the plugin configures cleanly and the
-`publishPlugins` task is registered. The actual publish has **not**
-happened — it needs real portal credentials this environment can't create.
+key. `pesaflow4j-gradle-plugin/build.gradle.kts` has `com.gradle.plugin-publish`
+wired (`website`, `vcsUrl`, keyword `tags` for the portal's own search —
+the same discoverability goal as SS7, applied to this second registry).
+
+**Status: submitted, awaiting Gradle's first-time review.** The account
+(step 1) and API key (step 2) below were created by the project owner, who
+handed the key pair over directly; `./gradlew publishPlugins -PpesaflowVersion=0.1.0`
+was then run directly against the real portal (not through
+`release-gradle-plugin.yml`, since the `v0.1.0` tag already existed from
+the Maven Central release before this workflow did — a fresh tag wasn't
+worth cutting just to exercise the same command CI would run) and
+returned:
+
+> Your new plugin io.github.josemodi97.pesaflow4j has been submitted for
+> approval by Gradle engineers. The request should be processed within the
+> next few days, at which point you will be contacted via email.
+
+This is the standard first-time flow (see step 5 below) — the upload
+itself succeeded; `plugins { id("io.github.josemodi97.pesaflow4j") }`
+simply won't resolve publicly until the review clears.
+
+**A real bug surfaced on the very first publish attempt**: it failed with
+`Cannot perform signing task ':signPesaflow4jPluginMarkerMavenPublication'
+because it has no configured signatory`. The bare `signing` plugin had
+been applied to this build file out of habit, copying the pattern from
+the Maven-Central-bound reactor modules — but the Plugin Portal doesn't
+require (or want) GPG-signed artifacts, and nothing in this file ever
+called `signing.sign(...)`, so the task existed with nothing to configure
+it. Fixed by removing the `signing` plugin from this project entirely
+(commit `3b007ba`) — it was never needed here.
 
 1. **Create a Gradle Plugin Portal account** at
-   <https://plugins.gradle.org> (GitHub OAuth sign-in works here too).
+   <https://plugins.gradle.org> (GitHub OAuth sign-in works here too). — done
 2. **Generate an API key pair**: profile page → API Keys → Generate. Shows
-   a key and a secret, once.
+   a key and a secret, once. — done
 3. **Add repository secrets**: `GRADLE_PUBLISH_KEY`, `GRADLE_PUBLISH_SECRET`
    — `.github/workflows/release-gradle-plugin.yml` reads them as
    `ORG_GRADLE_PROJECT_gradle.publish.key` / `...secret` (Gradle's
-   convention for mapping an env var to a project property), the same
-   property names `com.gradle.plugin-publish` looks for locally via
-   `gradle.publish.key`/`gradle.publish.secret` in `~/.gradle/gradle.properties`
-   or `./gradlew login`.
-4. **Push a version tag** (`git tag vX.Y.Z && git push --tags`) —
-   `release-gradle-plugin.yml` triggers off the same tag pattern as
-   `release.yml`, so both publish together from one tag push. It extracts
-   the version from the tag itself (`-PpesaflowVersion=...`), rather than
-   whatever `pesaflow4jVersion` fallback happens to be hardcoded in the
-   build file, so this can't go stale the way the SS test-dependency
-   version already did once (see the retrospective above).
+   convention for mapping an env var to a project property — note bash's
+   `export` rejects dotted identifiers, so a direct local run needs
+   `env 'ORG_GRADLE_PROJECT_gradle.publish.key=...' ./gradlew ...`
+   instead), the same property names `com.gradle.plugin-publish` looks for
+   locally via `gradle.publish.key`/`gradle.publish.secret` in
+   `~/.gradle/gradle.properties` or `./gradlew login`. — done (both secrets
+   set on the repo, for future tag-triggered releases)
+4. **Push a version tag** (`git tag vX.Y.Z && git push --tags`) for the
+   *next* release — `release-gradle-plugin.yml` triggers off the same tag
+   pattern as `release.yml`, so both will publish together from one tag
+   push going forward. It extracts the version from the tag itself
+   (`-PpesaflowVersion=...`), rather than whatever `pesaflow4jVersion`
+   fallback happens to be hardcoded in the build file, so this can't go
+   stale the way the SS test-dependency version already did once (see the
+   retrospective above). Not exercised yet, since 0.1.0 was published
+   directly rather than through this workflow (see above) — worth
+   confirming end-to-end on the next release.
 5. **First-time publish note**: a brand-new plugin ID needs to pass the
-   Portal's initial review before it's publicly listed (usually fast, can
-   take longer); subsequent versions of an already-approved ID publish
-   immediately.
-
-**Not yet done, because it genuinely can't be from here**: the account
-creation and API key generation in steps 1–2. Once you have the key pair,
-I can load it as repository secrets the same way as `CENTRAL_USERNAME`/
-`CENTRAL_PASSWORD` were — hand them over (or run `gh secret set` yourself,
-same either-way option as before) and step 4 can run for real.
+   Portal's initial review before it's publicly listed (usually a few
+   days per Gradle's own message above); subsequent versions of an
+   already-approved ID publish immediately, no re-review.
 
 ## 7. SEO & discoverability checklist
 

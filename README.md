@@ -134,7 +134,7 @@ Every flag falls back to a `PESAFLOW4J_*` environment variable, so CI pipelines 
 
 ### Project scaffolding: Maven & Gradle plugins
 
-`pesaflow4j-maven-plugin` is on Maven Central and usable today. `pesaflow4j-gradle-plugin` is built, tested, and CI-verified, but not yet published to the [Gradle Plugin Portal](https://plugins.gradle.org) — the `plugins { id(...) }` snippet below won't resolve until that's done (see [PLAN.md](PLAN.md#publishing-pesaflow4j-gradle-plugin)). Until then, build and `./gradlew publishToMavenLocal` it yourself from a clone of this repo.
+`pesaflow4j-maven-plugin` is on Maven Central and usable today. `pesaflow4j-gradle-plugin` has been submitted to the [Gradle Plugin Portal](https://plugins.gradle.org) and is awaiting first-time approval (new plugin IDs get a manual review — typically a few days; see [PLAN.md](PLAN.md#publishing-pesaflow4j-gradle-plugin)) — the `plugins { id(...) }` snippet below won't resolve until that clears. Until then, build and `./gradlew publishToMavenLocal` it yourself from a clone of this repo.
 
 ```bash
 # Maven
