@@ -1,0 +1,54 @@
+name: Release
+
+# Template workflow: publishes every module in the reactor (pesaflow4j-core,
+# -servlet, -jakarta, both Spring Boot starters, -cli, -bom,
+# -maven-plugin — pesaflow4j-gradle-plugin is a separate standalone build,
+# see its own publishing notes in PLAN.md) to Maven Central via the
+# Sonatype Central Publishing Portal when a `vX.Y.Z` tag is pushed.
+#
+# Requires these repository secrets before this workflow can run for real
+# (see PLAN.md "Publishing to Maven Central" for how to obtain each one):
+#   CENTRAL_USERNAME, CENTRAL_PASSWORD   - Sonatype Central Publishing Portal user token
+#   GPG_PRIVATE_KEY, GPG_PASSPHRASE      - artifact signing key (Central requires signed releases)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    name: Publish to Maven Central
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Verify tag matches the reactor's project version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          POM_VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
+          if [ "$TAG_VERSION" != "$POM_VERSION" ]; then
+            echo "Tag v$TAG_VERSION does not match pom.xml version $POM_VERSION" >&2
+            exit 1
+          fi
+
+      - name: Run the full test suite before publishing anything
+        run: mvn -B verify
+
+      - name: Build, sign, and publish every module
+        run: mvn -B -Prelease -DskipTests deploy
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

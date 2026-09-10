@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.josemodi97.pesaflow4j.spring.boot2.Pesaflow4jAutoConfiguration

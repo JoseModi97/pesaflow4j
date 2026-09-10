@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.josemodi97</groupId>
+    <artifactId>pesaflow4j-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pesaflow4j-cli</artifactId>
+  <packaging>jar</packaging>
+
+  <name>PesaFlow4J CLI</name>
+  <description>
+    PesaFlow4J command-line tool: build/submit signed checkouts, poll settlement status,
+    and verify captured webhook payloads without writing any application code.
+  </description>
+  <url>https://github.com/JoseModi97/pesaflow4j</url>
+
+  <properties>
+    <picocli.version>4.7.6</picocli.version>
+    <mainClass>io.github.josemodi97.pesaflow4j.cli.Pesaflow4jCli</mainClass>
+    <imageName>pesaflow4j</imageName>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.josemodi97</groupId>
+      <artifactId>pesaflow4j-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>${picocli.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>pesaflow4j-cli-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <!--
+          picocli's annotation processor, given -Aproject=true, generates the
+          GraalVM reflection/resource config (META-INF/native-image/**) that
+          this CLI's @Command classes need for native-image compilation.
+          See https://picocli.info/#_graalvm_native_image
+        -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli-codegen</artifactId>
+              <version>${picocli.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <arg>-Aproject=true</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${mainClass}</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!--
+    GraalVM native-image compilation of the CLI: `mvn -Pnative -DskipTests package`.
+    Requires a GraalVM distribution (with native-image installed) as the
+    build JDK, plus - on Windows - the MSVC linker; not assumed to be
+    present in every environment. CI builds and smoke-tests the real binary
+    on a GraalVM JDK (see .github/workflows/ci.yml).
+  -->
+  <profiles>
+    <profile>
+      <id>native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.3</version>
+            <extensions>true</extensions>
+            <configuration>
+              <imageName>${imageName}</imageName>
+              <mainClass>${mainClass}</mainClass>
+              <buildArgs>
+                <buildArg>--no-fallback</buildArg>
+              </buildArgs>
+            </configuration>
+            <executions>
+              <execution>
+                <id>build-native</id>
+                <goals>
+                  <goal>compile-no-fork</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
