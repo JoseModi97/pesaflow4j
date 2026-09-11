@@ -1,7 +1,7 @@
 # PesaFlow4J
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.josemodi97/pesaflow4j-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.josemodi97/pesaflow4j-core)
-[![Javadoc](https://javadoc.io/badge2/io.github.josemodi97/pesaflow4j-core/javadoc.svg)](https://javadoc.io/doc/io.github.josemodi97/pesaflow4j-core)
+[![Javadoc](https://javadoc.io/badge2/io.github.josemodi97/pesaflow4j-core/javadoc.svg?v=0.1.0)](https://javadoc.io/doc/io.github.josemodi97/pesaflow4j-core)
 [![CI](https://github.com/JoseModi97/pesaflow4j/actions/workflows/ci.yml/badge.svg)](https://github.com/JoseModi97/pesaflow4j/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java 8+](https://img.shields.io/badge/Java-8%2B-blue.svg)](#compatibility)
